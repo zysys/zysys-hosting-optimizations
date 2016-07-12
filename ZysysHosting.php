@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.5.9
+ * Version: 0.6.0
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -319,7 +319,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.5.9');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.0');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
@@ -339,7 +339,9 @@ function zysyshosting_zycache_uploads_setup($content) {
     if (ZYSYS_IS_SUBBLOG)
         return $content;
 
-    $originalUploadDir = wp_get_upload_dir()['baseurl'];
+    $origContent = $content;
+
+    $originalUploadDir = wp_upload_dir( null, false )['baseurl'];
     $originalURL = get_bloginfo('url');
     $relImageUpload = substr($originalUploadDir, strlen($originalURL));
 
@@ -355,9 +357,13 @@ function zysyshosting_zycache_uploads_setup($content) {
     $uploadDir = $originalUploadDir;
 
     $uploadDir = $https? ZYCACHE_HTTPS  . '/' . $uploadDir : ZYCACHE . '/' .$uploadDir;
-    $content = preg_replace('|([' . "'" .'"])'.str_replace('/', '/+', $relImageUpload).'/(.*?)(['."'" . '"])|', "\\1".$uploadDir."\\2"."\\3", $content);
-    $content = preg_replace('|https?://'.str_replace('/', '/+', $originalUploadDir).'(.*?)([ '."'" . '"])|', $uploadDir."\\1"."\\2", $content);
-    return $content;
+    $content = preg_replace('|([\(' . "'" .'"])'.str_replace('/', '/+', $relImageUpload).'/(.*?)([\)'."'" . '"])|', "\\1".$uploadDir."\\2"."\\3", $content);
+    $content = preg_replace('|https?://(www\.){0,1}'.str_replace('/', '/+', $originalUploadDir).'(.*?)([ '."'" . '\)"])|', $uploadDir."\\2"."\\3", $content);
+
+    if (strlen($origContent) > strlen($content))
+        return $origContent; # Crisis mode! :-)
+    else    
+        return $content;
 }
 
 /* Remove https://www. or any variant theirin from the argument
