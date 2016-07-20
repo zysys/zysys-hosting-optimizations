@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.0
+ * Version: 0.6.1
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -70,6 +70,7 @@ if (!ZYSYS_IS_SUBBLOG) {
     add_filter('the_content', 'zysyshosting_zycache_uploads_setup');
     add_filter('script_loader_src', 'zysyshosting_zycache_script_setup');
     add_filter('style_loader_src', 'zysyshosting_zycache_style_setup');
+    add_action('wp_head', 'zysyshosting_zycache_dns_prefetch');
 }
 
 function zysyshosting_optimizations_activation() {
@@ -167,7 +168,6 @@ function zysyshosting_zycache_setup() {
            # No symlink 
             shell_exec("/scripts/wp-optimize-domains.pl --zycache-add='" . zysyshosting_clean_domain_prefix(site_url()) . "' --abspath='" . ABSPATH . "'");
             shell_exec("/scripts/wp-optimize-domains.pl --run-zycache");
-            system('sh /scripts/cdn-new-client.sh '. zysyshosting_clean_domain_prefix(site_url()));
         } else {
             # symlink exists, but files aren't accessible.
             print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric."';
@@ -319,11 +319,34 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.0');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.1');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
 
+}
+
+/* Adds DNS Prefetch params to the head
+ * @since 0.6.1
+ * @param NONE
+ * @return NONE
+ * @hooksto wp_head
+ */
+
+function zysyshosting_zycache_dns_prefetch() {
+    if (ZYCACHE == ZYCACHE_HTTPS)
+        $https = true;
+    else
+        $https = false;
+
+    if ($https) {
+        $domains = array(ZYCACHE_HTTPS);
+    } else {
+        $domains = array(ZYCACHE, ZYCACHE_JS, ZYCACHE_CSS);
+    }
+    foreach ($domains as $domain) {
+        echo '<link rel="dns-prefetch" href="' . $domain . '" />';
+    }
 }
 
 
