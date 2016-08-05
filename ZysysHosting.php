@@ -347,13 +347,26 @@ function zysyshosting_zycache_dns_prefetch() {
     if ($https) {
         $domains = array(ZYCACHE_HTTPS);
     } else {
-        $domains = array(ZYCACHE, ZYCACHE_JS, ZYCACHE_CSS);
+        $domains = array(ZYCACHE, ZYCACHE_JS, ZYCACHE_CSS, ZYCACHE_IMAGE);
     }
     foreach ($domains as $domain) {
         echo '<link rel="dns-prefetch" href="' . $domain . '" />';
     }
 }
 
+/* Gets the images sent through the thumbnails to reflect Zycache
+ * @since 0.6.2
+ * @param $image_source_url
+ * @return $modified_source_url
+ * @hooksto wp_get_attachment_url
+ */
+function zycache_thumbnail_setup($url) {
+    if (is_admin())
+        return $url;
+    $originalDomain = get_bloginfo('url');
+    $domain = zysyshosting_clean_domain_prefix($originalDomain);
+    return str_replace($domain, zysyshosting_clean_domain_prefix(ZYCACHE_IMAGE) . '/' . $domain, $url); 
+}
 
 /* Replace urls in the_content of relative and explict urls
  * @since 0.5.5
@@ -545,16 +558,4 @@ function zysyshosting_memcached_update() {
     }
     if ($move)
         copy(dirname(__FILE__) . '/includes/object-cache.php', WP_CONTENT_DIR . '/object-cache.php'); 
-}
-
-/* Gets the images sent through the thumbnails to reflect Zycache
- * @since 0.6.2
- * @param $image_source_url
- * @return $modified_source_url
- * @hooksto wp_get_attachment_url
- */
-function zycache_thumbnail_setup($url) {
-    $originalDomain = get_bloginfo('url');
-    $domain = zysyshosting_clean_domain_prefix($originalDomain);
-    return str_replace($domain, ZYCACHE_IMAGE . '/' . $domain, $url); 
 }
