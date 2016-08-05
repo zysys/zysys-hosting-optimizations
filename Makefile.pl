@@ -6,6 +6,8 @@ use strict;
 use warnings;
 use Carp;
 
+my @files = qw| ZysysHosting.php includes/ |;
+
 open (ZY, 'ZysysHosting.php');
 my $version = 0;
 while (<ZY>) {
@@ -21,4 +23,11 @@ while (<ZY>) {
 }
 close (ZY);
 
-system ("zip ZysysHostingOptimizations-" . $version . ".zip ZysysHosting.php includes/*");
+if (`mkdir ZysysHostingOptimizations 2>&1 3>&1` =~ /exists/) {
+    croak "ERROR: The folder ZysysHostingOptimizations exists. Please remove it.\n\t";
+}
+foreach (@files) {
+    system("cp -r $_ ZysysHostingOptimizations");
+}
+system ("zip -r ZysysHostingOptimizations-" . $version . ".zip ZysysHostingOptimizations/");
+system("rm -R ZysysHostingOptimizations/");
