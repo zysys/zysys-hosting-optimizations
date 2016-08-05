@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.1
+ * Version: 0.6.2
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -71,6 +71,7 @@ if (!ZYSYS_IS_SUBBLOG) {
     add_filter('script_loader_src', 'zysyshosting_zycache_script_setup');
     add_filter('style_loader_src', 'zysyshosting_zycache_style_setup');
     add_action('wp_head', 'zysyshosting_zycache_dns_prefetch');
+    add_filter('wp_get_attachment_url', 'zycache_thumbnail_setup');
 }
 
 function zysyshosting_optimizations_activation() {
@@ -306,6 +307,8 @@ function zysyshosting_define_constants() {
             define('ZYCACHE_JS', 'http://js.zycache.com');
         if (!defined('ZYCACHE_CSS'))
             define('ZYCACHE_CSS', 'http://css.zycache.com');
+        if (!defined('ZYCACHE_IMAGE'))
+            define('ZYCACHE_IMAGE', 'http://img.zycache.com');
     } else {
         if (!defined('ZYCACHE'))
             define('ZYCACHE', ZYCACHE_HTTPS);
@@ -313,13 +316,15 @@ function zysyshosting_define_constants() {
             define('ZYCACHE_JS', ZYCACHE_HTTPS);
         if (!defined('ZYCACHE_CSS'))
             define('ZYCACHE_CSS', ZYCACHE_HTTPS);
+        if (!defined('ZYCACHE_IMAGE'))
+            define('ZYCACHE_IMAGE', ZYCACHE_HTTPS);
     }
 
     if (!defined('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION'))
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.1');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.2');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
@@ -517,8 +522,7 @@ function zysyshosting_zycache_style_setup($url) {
 
     $replacedDomain = ($https? ZYCACHE_HTTPS : ZYCACHE_CSS) . '/' .$domain;
     return preg_replace('|'.$originalDomain.'|', $replacedDomain, $url);
-
-}
+} 
 
 /* Copies includes/object-cache.php to WP_CONTENT
  * @since 0.5.5
@@ -543,3 +547,14 @@ function zysyshosting_memcached_update() {
         copy(dirname(__FILE__) . '/includes/object-cache.php', WP_CONTENT_DIR . '/object-cache.php'); 
 }
 
+/* Gets the images sent through the thumbnails to reflect Zycache
+ * @since 0.6.2
+ * @param $image_source_url
+ * @return $modified_source_url
+ * @hooksto wp_get_attachment_url
+ */
+function zycache_thumbnail_setup($url) {
+    $originalDomain = get_bloginfo('url');
+    $domain = zysyshosting_clean_domain_prefix($originalDomain);
+    return str_replace($domain, ZYCACHE_IMAGE . '/' . $domain, $url); 
+}
