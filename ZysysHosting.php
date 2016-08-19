@@ -143,6 +143,7 @@ function zysyshosting_maintenance() {
     zysyshosting_memcached_update();
     zysyshosting_wordpress_securing();
     zysyshosting_wp_permissions();
+    zysyshosting_disable_indexes();
     zysyshosting_ms_files();
     zysyshosting_plugin_perpetual_updater();
     global $wpdb;
@@ -481,6 +482,13 @@ deny from all
 EOC;
     htaccess_adder($protect_wp, "## BEGIN ZYSYSHOSTING_WORDPRESS_SECURING", "## END ZYSYSHOSTING_WORDPRESS_SECURING");
     return;
+}
+
+function zysyshosting_disable_indexes() {
+    $disable_indexes = <<<EOC
+Options All -Indexes
+EOC;
+    htaccess_adder($disable_indexes, "## BEGIN ZYSYSHOSTING_DISABLE_INDEXES", "## END ZYSYSHOSTING_DISABLE_INDEXES");
 }
 
 /* Adds ob_clean() and flush() to ms_files.php which allows multisite to render files for multi-domain and domain mapping
