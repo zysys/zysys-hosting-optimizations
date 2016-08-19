@@ -106,6 +106,21 @@ function zysyshosting_authorize() {
     }
 }
 
+/* Removes certain wordpress installation files
+ * @since 0.6.3
+ * @param NONE
+ * @return NONE
+ * @calledfrom zysyshosting_maintenance
+ */
+function zysyshosting_remove_installation_files() {
+    $install_files = array(ABSPATH.'readme.html', ABSPATH.'wp-config-sample.php', ABSPATH.'wp-admin/install.php');
+
+    foreach ($install_files as $file)
+        if (file_exists($file))
+            unlink($file);
+    
+}
+
 function zysyshosting_add_pages() {
     add_submenu_page('options-general.php', 'Zysys Hosting Settings', 'Zysys Hosting', 'update_core', 'zysys-hosting-settings', 'zysyshosting_admin_panel');
 }
@@ -148,13 +163,14 @@ function zysyshosting_admin_panel() {
 
 function zysyshosting_maintenance() {
 
-    zysyshosting_authorize()
+    zysyshosting_authorize();
 
     zysyshosting_define_constants();
 
     if (!ZYSYS_IS_SUBBLOG)
         zysyshosting_zycache_setup();
 
+    zysyshosting_remove_installation_files();
     zysyshosting_wp_cron_setup();
     zysyshosting_wp_secure_files();
     zysyshosting_memcached_update();
