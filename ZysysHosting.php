@@ -90,6 +90,12 @@ function zysyshosting_optimizations_post_upgrade() {
         zysyshosting_maintenance();
 }
 
+/* Checks to see if the hosting server is part of the zysyshosting network
+ * @since 0.6.3
+ * @param NONE
+ * @return NONE
+ * @calledfrom zysyshosting_maintenance
+ */
 function zysyshosting_authorize() {
     require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
     if (strpos(shell_exec("hostname"), ".zysyshosting.com") === false) {
@@ -336,7 +342,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.2');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.3');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
