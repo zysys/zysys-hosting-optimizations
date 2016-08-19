@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.2
+ * Version: 0.6.3
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
