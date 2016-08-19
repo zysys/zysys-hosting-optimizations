@@ -19,16 +19,15 @@
  * ADD ADMIN PANEL
  *  - WITH OPTIONS FOR EACH ZYCACHE SETTING,
  *  - MEMCACHED,
- *  - RUN MAINTENANCE,
  *  - DOCUMENTATION
- * AUTHORIZED URL THAT HOOKS INTO WP_CRON
+ *  ...review register_settings()
  * SUGGEST SETTINGS FOR WP-SUPERCACHE & W3 TOTAL CACHE
  *
  */
 
 #####################################################################
 # Tools:
-# Zycache Setup, zysys.cachefly.net for https.  https (js goes on cdn1 - leave relative alone, css goes on cdn2 - leave relative alone, all others zycache)
+# Zycache Setup, zysys.cachefly.net for https.  https (js goes on js - leave relative alone, css goes on cdn2 - leave relative alone, all others zycache)
 # Memcached Setup
 # WP_Cron Setup
 # wp-config.php securing
@@ -91,6 +90,16 @@ function zysyshosting_optimizations_post_upgrade() {
         zysyshosting_maintenance();
 }
 
+function zysyshosting_authorize() {
+    require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    if (strpos(shell_exec("hostname"), ".zysyshosting.com") === false) {
+        deactivate_plugins(plugin_basename( __FILE__ ));
+        return false;
+    } else {
+        return true;
+    }
+}
+
 function zysyshosting_add_pages() {
     add_submenu_page('options-general.php', 'Zysys Hosting Settings', 'Zysys Hosting', 'update_core', 'zysys-hosting-settings', 'zysyshosting_admin_panel');
 }
@@ -132,6 +141,8 @@ function zysyshosting_admin_panel() {
  */
 
 function zysyshosting_maintenance() {
+
+    zysyshosting_authorize()
 
     zysyshosting_define_constants();
 
