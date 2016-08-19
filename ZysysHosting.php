@@ -551,7 +551,7 @@ function zysyshosting_memcached_update() {
         else
             return;
     } else {
-        if (file_exists(dirname(__FILE__) . '/object-cache.php'))
+        if (file_exists(dirname(__FILE__) . '/includes/object-cache.php'))
             $move = 1; 
         else
             return;
