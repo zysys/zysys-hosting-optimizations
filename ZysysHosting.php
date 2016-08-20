@@ -173,7 +173,6 @@ function zysyshosting_maintenance() {
     zysyshosting_remove_installation_files();
     zysyshosting_wp_cron_setup();
     zysyshosting_wp_secure_files();
-    zysyshosting_memcached_update();
     zysyshosting_wordpress_securing();
     zysyshosting_wp_permissions();
     zysyshosting_disable_indexes();
@@ -577,26 +576,3 @@ function zysyshosting_zycache_style_setup($url) {
     $replacedDomain = ($https? ZYCACHE_HTTPS : ZYCACHE_CSS) . '/' .$domain;
     return preg_replace('|'.$originalDomain.'|', $replacedDomain, $url);
 } 
-
-/* Copies includes/object-cache.php to WP_CONTENT
- * @since 0.5.5
- * @param NONE
- * @return NONE
- */
-function zysyshosting_memcached_update() {
-    $move = 0;
-    if (file_exists(WP_CONTENT_DIR . '/object-cache.php')) {
-        require_once(WP_CONTENT_DIR. '/object-cache.php');
-        if (!defined('ZYSYS_HOSTING_OBJECT_CACHE_VERSION') || ZYSYS_HOSTING_OBJECT_CACHE_VERSION < ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION)
-            $move = 1;
-        else
-            return;
-    } else {
-        if (file_exists(dirname(__FILE__) . '/includes/object-cache.php'))
-            $move = 1; 
-        else
-            return;
-    }
-    if ($move)
-        copy(dirname(__FILE__) . '/includes/object-cache.php', WP_CONTENT_DIR . '/object-cache.php'); 
-}
