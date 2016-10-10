@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.3
+ * Version: 0.6.4
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -63,6 +63,7 @@ add_action('upgrader_process_complete', 'zysyshosting_maintenance');
 register_activation_hook(__FILE__, 'zysyshosting_optimizations_activation');
 register_deactivation_hook(__FILE__, 'zysyshosting_optimizations_deactivation');
 add_action('zysyshosting_optimizations_updates', 'zysyshosting_optimizations_post_upgrade');
+zysyshosting_do_updates_if_requested();
 
 if (!ZYSYS_IS_SUBBLOG) {
     # Setup Zycache
@@ -130,28 +131,69 @@ function zysyshosting_admin_panel() {
         wp_die( __('You do not have sufficient permissions to access this page.') );
     }
     $maint = 0;
-    if (isset($_POST['ZysysMaintenance']) && $_POST['ZysysMaintenance'] == "Run Zysys Hosting Maintenance Procedures") {
+    if (isset($_POST['ZysysHostingMaintenance']) && $_POST['ZysysHostingMaintenance'] == "Run Zysys Hosting Maintenance Procedures") {
         zysyshosting_maintenance();
         $maint = 1;
+    } elseif (isset($_POST['ZysysHostingOptions'])) { 
+        $keepCoreUpToDate = $_POST['ZysysHostingCoreUpdater'];
+        if ($keepCoreUpToDate == 1)
+            $keepCoreUpToDate = 'update1';
+        $keepPluginsUpToDate = $_POST['ZysysHostingPluginUpdater'];
+        if ($keepPluginsUpToDate == 1)
+            $keepPluginsUpToDate = 'update1';
+        $keepThemesUpToDate = $_POST['ZysysHostingThemeUpdater'];
+        if ($keepThemesUpToDate == 1)
+            $keepThemesUpToDate = 'update1';
+        update_option('zysyshosting_update_core_automatically', $keepCoreUpToDate);
+        update_option('zysyshosting_update_plugins_automatically', $keepPluginsUpToDate);
+        update_option('zysyshosting_update_themes_automatically', $keepThemesUpToDate);
     }
 ?>
 <div class="wrap">
 <img src="//zysyshosting.cachefly.net/zysys.org/images/retina-zysys-logo.png" style="width:198px;" alt="Zysys Logo" /> 
 <h2>Zysys Hosting</h2>
+<p>This panel will give you options to control your site in, hopefully useful ways.  If you have any suggestions, contact your us.</p>
 </div>
-<form name="zysyshosting" method="post" action="">
-<p class="submit">
+<hr />
+<form name="zysyshostingprefs" method="post" action="">
+<h3>Automatic Updates</h3>
+<p class="caption">Turning on automatic updates can break your site long term.  If you don't regularly update your site, it is recommended that you turn these 3 options on.</p>
+<input type="checkbox" id="ZysysCoreUpdater" name="ZysysHostingCoreUpdater" <?php checked(get_option('zysyshosting_update_core_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingCoreUpdater">Keep the WordPress Core Updated</input><br />
+<input type="checkbox" id="ZysysPluginUpdater" name="ZysysHostingPluginUpdater" <?php checked(get_option('zysyshosting_update_plugins_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingPluginUpdater">Keep WordPress Plugins Updated</input><br />
+<input type="checkbox" id="ZysysThemeUpdater" name="ZysysHostingThemeUpdater" <?php checked(get_option('zysyshosting_update_themes_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingThemeUpdater">Keep WordPress Themes Updated</input><br />
+<input type="submit" name="ZysysHostingOptions" class="button-primary" value="Update Settings" />
+</form>
+<hr />
+<h2>Maintenance</h2>
+<p>Run the maintenance procedures if you've made a very significant level of adjustments, can't wait for the regularly scheduled maintenance interval, or something is wrong.</p>
+<form name="zysyshostingmaintenance" method="post" action="">
 <?php if($maint) { ?>
-<input type="submit" name="ZysysMaintenance" disabled style="font-style:italic" class="button-primary" value="Zysys Hosting Maintenance Procedures Complete." />
+<input type="submit" name="ZysysHostingMaintenance" disabled style="font-style:italic" class="button-primary" value="Zysys Hosting Maintenance Procedures Complete." />
 <?php } else { ?>
-<input type="submit" name="ZysysMaintenance" class="button-primary" value="Run Zysys Hosting Maintenance Procedures" />
+<input type="submit" name="ZysysHostingMaintenance" class="button-primary" value="Run Zysys Hosting Maintenance Procedures" />
 <?php } ?>
-</p>
 <hr />
 
 
 </form>
 <?php
+}
+
+/* Adds filters for various updates depending on option setting
+ * @since 0.6.4
+ * @param NONE
+ * @return NONE
+ */
+
+function zysyshosting_do_updates_if_requested() {
+    if (get_option('zysyshosting_update_core_automatically') == 'update1')
+        add_filter( 'auto_update_core', '__return_true' );
+
+    if (get_option('zysyshosting_update_plugins_automatically') == 'update1')
+        add_filter( 'auto_update_plugin', '__return_true' );
+
+    if (get_option('zysyshosting_update_themes_automatically') == 'update1')
+        add_filter( 'auto_update_theme', '__return_true' );
 }
 
 /* Runs the various maintenance procedures
@@ -176,6 +218,7 @@ function zysyshosting_maintenance() {
     zysyshosting_wordpress_securing();
     zysyshosting_wp_permissions();
     zysyshosting_disable_indexes();
+    zysyshosting_disable_php_execution();
     zysyshosting_ms_files();
     zysyshosting_plugin_perpetual_updater();
     global $wpdb;
@@ -194,7 +237,7 @@ function zysyshosting_plugin_perpetual_updater() {
  */
 
 function zysyshosting_zycache_setup() {
-    if (file_get_contents(ZYCACHE_JS . '/' . zysyshosting_clean_domain_prefix(site_url()) . '/' . WPINC . '/js/wp-emoji.js') == file_get_contents(site_url() . '/' . WPINC . '/js/wp-emoji.js')) {
+    if (file_get_contents(ZYCACHE_JS . '/' . zysyshosting_clean_domain_prefix(site_url()) . '/' . WPINC . '/js/wp-emoji.js')) {
         return 1;
     } else {
         # check for a symlink
@@ -204,7 +247,7 @@ function zysyshosting_zycache_setup() {
             shell_exec("/scripts/wp-optimize-domains.pl --run-zycache");
         } else {
             # symlink exists, but files aren't accessible.
-            print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric."';
+            print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric. Example: ' . ZYCACHE_JS . '/' . zysyshosting_clean_domain_prefix(site_url()) . '/' . WPINC . '/js/wp-emoji.js' . ' && ' . site_url() . '/' . WPINC . '/js/wp-emoji.js' ;
             return -1;
         }
     }
@@ -284,13 +327,19 @@ function zysyshosting_wp_permissions() {
 }
 
 /* Adds param 0 to the file between param1 and param2 OR updates the content between param1 and param2
- * Adds to ABSPATH . .htaccess
+ * IN 0.6.4, Variable htaccess based on 4th param.  Adds to ABSPATH . .htaccess by default
  * @since 0.5.5
- * @param $content, $header, $footer
+ * @param $content, $header, $footer, $path (optional - options are 'uploads', 'wp-includes', and [null or default])
  * @return NONE
  */
-function htaccess_adder($code, $openingtag, $closingtag) {
-    $htaccessPath = ABSPATH . '.htaccess';
+function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
+    if ($path == null || $path == 'default') {
+        $htaccessPath = ABSPATH . '.htaccess';
+    } elseif ($path == 'uploads') {
+        $htaccessPath = wp_upload_dir( null, false )['basedir'] . '/.htaccess';
+    } elseif ($path == 'wp-includes') {
+        $htaccessPath = ABSPATH. '/' . WPINC . '/.htaccess';
+    }
     $htaccessContent = file_get_contents($htaccessPath);
     if (strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($openingtag) . PHP_EOL . zysyshosting_make_single_line($code) . PHP_EOL . zysyshosting_make_single_line($closingtag)) !== false) {
         return -1;
@@ -357,7 +406,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.3');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.4');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
@@ -521,6 +570,16 @@ function zysyshosting_disable_indexes() {
 Options All -Indexes
 EOC;
     htaccess_adder($disable_indexes, "## BEGIN ZYSYSHOSTING_DISABLE_INDEXES", "## END ZYSYSHOSTING_DISABLE_INDEXES");
+}
+
+function zysyshosting_disable_php_execution() {
+    $disable_php = <<<EOC
+<Files *.php>
+deny from all
+</Files>
+EOC;
+    htaccess_adder($disable_php, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", "## END ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", 'uploads');
+    htaccess_adder($disable_php, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", "## END ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", 'wp-includes');
 }
 
 /* Adds ob_clean() and flush() to ms_files.php which allows multisite to render files for multi-domain and domain mapping
