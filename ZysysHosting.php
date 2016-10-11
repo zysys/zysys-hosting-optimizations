@@ -298,10 +298,18 @@ function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
         $htaccessPath = ABSPATH . '.htaccess';
     } elseif ($path == 'uploads') {
         $htaccessPath = wp_upload_dir( null, false )['basedir'] . '/.htaccess';
+        if (!is_dir(wp_upload_dir( null, false )['basedir'])) {
+           return;
+        }
     } elseif ($path == 'wp-includes') {
-        $htaccessPath = ABSPATH. '/' . WPINC . '/.htaccess';
+        $htaccessPath = ABSPATH . WPINC . '/.htaccess';
     }
-    $htaccessContent = file_get_contents($htaccessPath);
+
+    if (file_exists($htaccessPath))
+        $htaccessContent = file_get_contents($htaccessPath);
+    else
+        $htaccessContent = "";
+
     if (strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($openingtag) . PHP_EOL . zysyshosting_make_single_line($code) . PHP_EOL . zysyshosting_make_single_line($closingtag)) !== false) {
         return -1;
     } else {
