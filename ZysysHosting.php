@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.4
+ * Version: 0.6.5
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -63,6 +63,7 @@ add_action('upgrader_process_complete', 'zysyshosting_maintenance');
 register_activation_hook(__FILE__, 'zysyshosting_optimizations_activation');
 register_deactivation_hook(__FILE__, 'zysyshosting_optimizations_deactivation');
 add_action('zysyshosting_optimizations_updates', 'zysyshosting_optimizations_post_upgrade');
+zysyshosting_do_updates_if_requested();
 
 if (!ZYSYS_IS_SUBBLOG) {
     # Setup Zycache
@@ -133,6 +134,20 @@ function zysyshosting_admin_panel() {
     if (isset($_POST['ZysysHostingMaintenance']) && $_POST['ZysysHostingMaintenance'] == "Run Zysys Hosting Maintenance Procedures") {
         zysyshosting_maintenance();
         $maint = 1;
+    } elseif (isset($_POST['ZysysHostingOptions'])) { 
+        $keepCoreUpToDate = $_POST['ZysysHostingCoreUpdater'];
+        if ($keepCoreUpToDate == 1)
+            $keepCoreUpToDate = 'update1';
+        $keepPluginsUpToDate = $_POST['ZysysHostingPluginUpdater'];
+        if ($keepPluginsUpToDate == 1)
+            $keepPluginsUpToDate = 'update1';
+        $keepThemesUpToDate = $_POST['ZysysHostingThemeUpdater'];
+        if ($keepThemesUpToDate == 1)
+            $keepThemesUpToDate = 'update1';
+        update_option('zysyshosting_update_core_automatically', $keepCoreUpToDate);
+        update_option('zysyshosting_update_plugins_automatically', $keepPluginsUpToDate);
+        update_option('zysyshosting_update_themes_automatically', $keepThemesUpToDate);
+        $optset = 1;
     }
 ?>
 <div class="wrap">
@@ -140,6 +155,19 @@ function zysyshosting_admin_panel() {
 <h2>Zysys Hosting</h2>
 <p>This panel will give you options to control your site in, hopefully useful ways.  If you have any suggestions, contact your us.</p>
 </div>
+<hr />
+<form name="zysyshostingprefs" method="post" action="">
+<h3>Automatic Updates</h3>
+<p class="caption">Turning on automatic updates can break your site long term.  If you don't regularly update your site, it is recommended that you turn these 3 options on.</p>
+<input type="checkbox" id="ZysysCoreUpdater" name="ZysysHostingCoreUpdater" <?php checked(get_option('zysyshosting_update_core_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingCoreUpdater">Keep the WordPress Core Updated</input><br />
+<input type="checkbox" id="ZysysPluginUpdater" name="ZysysHostingPluginUpdater" <?php checked(get_option('zysyshosting_update_plugins_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingPluginUpdater">Keep WordPress Plugins Updated</input><br />
+<input type="checkbox" id="ZysysThemeUpdater" name="ZysysHostingThemeUpdater" <?php checked(get_option('zysyshosting_update_themes_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingThemeUpdater">Keep WordPress Themes Updated</input><br />
+<?php if($optset) { ?>
+<input type="submit" name="ZysysHostingOptions" disabled style="font-style:italic" class="button-primary" value="Settings Updated." />
+<?php } else { ?>
+<input type="submit" name="ZysysHostingOptions" class="button-primary" value="Update Settings" />
+<?php } ?>
+</form>
 <hr />
 <h2>Maintenance</h2>
 <p>Run the maintenance procedures if you've made a very significant level of adjustments, can't wait for the regularly scheduled maintenance interval, or something is wrong.</p>
@@ -156,6 +184,22 @@ function zysyshosting_admin_panel() {
 <?php
 }
 
+/* Adds filters for various updates depending on option setting
+ * @since 0.6.%
+ * @param NONE
+ * @return NONE
+ */
+
+function zysyshosting_do_updates_if_requested() {
+    if (get_option('zysyshosting_update_core_automatically') == 'update1')
+        add_filter( 'auto_update_core', '__return_true' );
+
+    if (get_option('zysyshosting_update_plugins_automatically') == 'update1')
+        add_filter( 'auto_update_plugin', '__return_true' );
+
+    if (get_option('zysyshosting_update_themes_automatically') == 'update1')
+        add_filter( 'auto_update_theme', '__return_true' );
+}
 
 /* Runs the various maintenance procedures
  * Called on plugin activation, core update, plugin updated, and when run throught the admin panel
@@ -375,7 +419,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.4');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.5');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
