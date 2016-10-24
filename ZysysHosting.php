@@ -578,6 +578,11 @@ EOC;
     return;
 }
 
+/* Prevents indexes from being shown if no files in directory
+ * @calls htaccess_adder
+ * @param NONE
+ * @return NONE
+ */
 function zysyshosting_disable_indexes() {
     $disable_indexes = <<<EOC
 Options All -Indexes
@@ -585,14 +590,25 @@ EOC;
     htaccess_adder($disable_indexes, "## BEGIN ZYSYSHOSTING_DISABLE_INDEXES", "## END ZYSYSHOSTING_DISABLE_INDEXES");
 }
 
+/* Prevents php execution in wp-includes (allows ms-files.php execution) and uploads
+ * @calls htaccess_adder
+ * @param NONE
+ * @return NONE
+ */
 function zysyshosting_disable_php_execution() {
     $disable_php = <<<EOC
 <Files *.php>
 deny from all
 </Files>
 EOC;
+    $allow_msfiles = <<<EOC
+
+<Files ms-files.php>
+allow from all
+</Files>
+EOC;
     htaccess_adder($disable_php, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", "## END ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", 'uploads');
-    htaccess_adder($disable_php, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", "## END ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", 'wp-includes');
+    htaccess_adder($disable_php.$allow_msfiles, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", "## END ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", 'wp-includes');
 }
 
 /* Adds ob_clean() and flush() to ms_files.php which allows multisite to render files for multi-domain and domain mapping
