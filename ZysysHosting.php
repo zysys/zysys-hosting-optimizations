@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.5
+ * Version: 0.6.6
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -226,6 +226,7 @@ function zysyshosting_maintenance() {
     zysyshosting_disable_php_execution();
     zysyshosting_ms_files();
     zysyshosting_plugin_perpetual_updater();
+    zysyshosting_wp_rules_check();
     global $wpdb;
     update_option('zysyshosting_optimizations_version', ZYSYSHOSTING_OPTIMIZATIONS_VERSION);
 }
@@ -331,6 +332,33 @@ function zysyshosting_wp_permissions() {
     shell_exec("find " . escapeshellcmd(ABSPATH.'/wp-admin/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
 }
 
+/* Checks if the default WordPress rules are present.  Otherwise it uses wp-cli to flush them to .htaccess
+ * @since 0.6.6
+ * @param NONE
+ * @return NONE
+ * @calledfrom zysyshosting_maintenance()
+ */
+function zysyshosting_wp_rules_check() {
+    $htaccessPath = ABSPATH . '.htaccess';
+
+    if (file_exists($htaccessPath))
+        $htaccessContent = file_get_contents($htaccessPath);
+    else
+        $htaccessContent = ""; 
+
+    $config = <<<EOL
+apache_modules:
+  - mod_rewrite
+EOL;
+    $openingtag = "# BEGIN WordPress";
+    $closingtag = "# END WordPress";
+    if (strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($openingtag)) === false || strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($closingtag)) === false) {
+        file_put_contents("wp-cli.local.yml", $config);
+        system("/usr/sbin/wp --allow-root rewrite flush --hard 2>/dev/null 1>/dev/null 3>/dev/null");
+        unlink("wp-cli.local.yml");
+    }   
+}
+
 /* Adds param 0 to the file between param1 and param2 OR updates the content between param1 and param2
  * IN 0.6.4, Variable htaccess based on 4th param.  Adds to ABSPATH . .htaccess by default
  * @since 0.5.5
@@ -419,7 +447,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.5');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.6');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
