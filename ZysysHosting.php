@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.6
+ * Version: 0.6.7
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -63,6 +63,7 @@ add_action('upgrader_process_complete', 'zysyshosting_maintenance');
 register_activation_hook(__FILE__, 'zysyshosting_optimizations_activation');
 register_deactivation_hook(__FILE__, 'zysyshosting_optimizations_deactivation');
 add_action('zysyshosting_optimizations_updates', 'zysyshosting_optimizations_post_upgrade');
+add_action('zysyshosting_maintenance_hourly', 'zysyshosting_maintenance');
 zysyshosting_do_updates_if_requested();
 
 if (!ZYSYS_IS_SUBBLOG) {
@@ -83,6 +84,7 @@ function zysyshosting_optimizations_activation() {
 
 function zysyshosting_optimizations_deactivation() {
     wp_clear_scheduled_hook('zysyshosting_optimizations_updates');
+    wp_clear_scheduled_hook('zysyshosting_maintenance_hourly');
 }
 
 function zysyshosting_optimizations_post_upgrade() {
@@ -209,6 +211,10 @@ function zysyshosting_do_updates_if_requested() {
  */
 
 function zysyshosting_maintenance() {
+
+    if( !wp_next_scheduled( 'zysyshosting_maintenance_hourly' ) ) { 
+        wp_schedule_event( time(), 'hourly', 'zysyshosting_maintenance_hourly' );
+    } 
 
     zysyshosting_authorize();
 
@@ -447,7 +453,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.6');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.7');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
