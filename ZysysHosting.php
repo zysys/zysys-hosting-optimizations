@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.7
+ * Version: 0.6.8
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -275,6 +275,9 @@ function zysyshosting_zycache_setup() {
 function wpconfig_adder($code, $openingtag, $closingtag) {
     $wpconfigPath = ABSPATH . 'wp-config.php';
     $wpconfigContent = file_get_contents($wpconfigPath);
+    if (strpos($wpconfigContent, "<?") === false) {
+        return -2;
+    }
     if (strpos(zysyshosting_make_single_line($wpconfigContent), zysyshosting_make_single_line($openingtag) . PHP_EOL . zysyshosting_make_single_line($code) . PHP_EOL . zysyshosting_make_single_line($closingtag)) !== false) {
         return -1;
     } else {
@@ -383,10 +386,14 @@ function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
         $htaccessPath = ABSPATH . WPINC . '/.htaccess';
     }
 
-    if (file_exists($htaccessPath))
+    if (file_exists($htaccessPath)) {
         $htaccessContent = file_get_contents($htaccessPath);
-    else
+        if ($htaccessContent == "") {
+            return -2;
+        }
+    } else {
         $htaccessContent = "";
+    }
 
     if (strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($openingtag) . PHP_EOL . zysyshosting_make_single_line($code) . PHP_EOL . zysyshosting_make_single_line($closingtag)) !== false) {
         return -1;
@@ -453,7 +460,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.7');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.8');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
