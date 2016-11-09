@@ -15,16 +15,6 @@
  */
 
 
-/* TODO:
- * ADD ADMIN PANEL
- *  - WITH OPTIONS FOR EACH ZYCACHE SETTING,
- *  - MEMCACHED,
- *  - DOCUMENTATION
- *  ...review register_settings()
- * SUGGEST SETTINGS FOR WP-SUPERCACHE & W3 TOTAL CACHE
- *
- */
-
 #####################################################################
 # Tools:
 # Zycache Setup, zysys.cachefly.net for https.  https (js goes on js - leave relative alone, css goes on cdn2 - leave relative alone, all others zycache)
