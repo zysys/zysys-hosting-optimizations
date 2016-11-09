@@ -177,7 +177,7 @@ function zysyshosting_admin_panel() {
 }
 
 /* Adds filters for various updates depending on option setting
- * @since 0.6.%
+ * @since 0.6.7
  * @param NONE
  * @return NONE
  */
