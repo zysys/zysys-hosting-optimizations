@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.8
+ * Version: 0.6.9
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -18,11 +18,12 @@
 #####################################################################
 # Tools:
 # Zycache Setup, zysys.cachefly.net for https.  https (js goes on js - leave relative alone, css goes on cdn2 - leave relative alone, all others zycache)
-# Memcached Setup
 # WP_Cron Setup
 # wp-config.php securing
 # file & dir chmodding
 # set file permissions according to the Hardening Wordpress guide
+# image optimization
+# auto-update
 #####################################################################
 
 /**
@@ -54,6 +55,7 @@ register_activation_hook(__FILE__, 'zysyshosting_optimizations_activation');
 register_deactivation_hook(__FILE__, 'zysyshosting_optimizations_deactivation');
 add_action('zysyshosting_optimizations_updates', 'zysyshosting_optimizations_post_upgrade');
 add_action('zysyshosting_maintenance_hourly', 'zysyshosting_maintenance');
+add_action('zysyshosting_optimize_images', 'zysyshosting_optimize_images_proc');
 zysyshosting_do_updates_if_requested();
 
 if (!ZYSYS_IS_SUBBLOG) {
@@ -75,6 +77,8 @@ function zysyshosting_optimizations_activation() {
 function zysyshosting_optimizations_deactivation() {
     wp_clear_scheduled_hook('zysyshosting_optimizations_updates');
     wp_clear_scheduled_hook('zysyshosting_maintenance_hourly');
+    if (wp_next_scheduled('zysyshosting_optimize_images'))
+        wp_clear_scheduled_hook('zysyshosting_optimize_images');
 }
 
 function zysyshosting_optimizations_post_upgrade() {
@@ -130,22 +134,41 @@ function zysyshosting_admin_panel() {
         $keepCoreUpToDate = $_POST['ZysysHostingCoreUpdater'];
         if ($keepCoreUpToDate == 1)
             $keepCoreUpToDate = 'update1';
+        else
+            $keepCoreUpToDate = '';
         $keepPluginsUpToDate = $_POST['ZysysHostingPluginUpdater'];
         if ($keepPluginsUpToDate == 1)
             $keepPluginsUpToDate = 'update1';
+        else
+            $keepPluginsUpToDate = '';
         $keepThemesUpToDate = $_POST['ZysysHostingThemeUpdater'];
         if ($keepThemesUpToDate == 1)
             $keepThemesUpToDate = 'update1';
+        else
+            $keepThemesUpToDate = '';
+        $keepImagesCompressed = $_POST['ZysysHostingImageCompression'];
+        if ($keepImagesCompressed == 1) {
+            $keepImagesCompressed = 'compress1';
+            if(!wp_next_scheduled('zysyshosting_optimize_images') ) { 
+                wp_schedule_event( time(), 'daily', 'zysyshosting_optimize_images' );
+            }
+        } else {
+            $keepImagesCompressed = '';
+            if (wp_next_scheduled('zysyshosting_optimize_images'))
+                wp_clear_scheduled_hook('zysyshosting_optimize_images');
+        }
         update_option('zysyshosting_update_core_automatically', $keepCoreUpToDate);
         update_option('zysyshosting_update_plugins_automatically', $keepPluginsUpToDate);
         update_option('zysyshosting_update_themes_automatically', $keepThemesUpToDate);
+        update_option('zysyshosting_keep_images_compressed', $keepImagesCompressed);
+        
         $optset = 1;
     }
 ?>
 <div class="wrap">
 <img src="//zysyshosting.cachefly.net/zysys.org/images/retina-zysys-logo.png" style="width:198px;" alt="Zysys Logo" /> 
 <h2>Zysys Hosting</h2>
-<p>This panel will give you options to control your site in, hopefully useful ways.  If you have any suggestions, contact your us.</p>
+<p>This panel will give you options to control your site in, hopefully useful ways.  If you have any suggestions, contact your Zysys Representative.</p>
 </div>
 <hr />
 <form name="zysyshostingprefs" method="post" action="">
@@ -154,6 +177,8 @@ function zysyshosting_admin_panel() {
 <input type="checkbox" id="ZysysCoreUpdater" name="ZysysHostingCoreUpdater" <?php checked(get_option('zysyshosting_update_core_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingCoreUpdater">Keep the WordPress Core Updated</input><br />
 <input type="checkbox" id="ZysysPluginUpdater" name="ZysysHostingPluginUpdater" <?php checked(get_option('zysyshosting_update_plugins_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingPluginUpdater">Keep WordPress Plugins Updated</input><br />
 <input type="checkbox" id="ZysysThemeUpdater" name="ZysysHostingThemeUpdater" <?php checked(get_option('zysyshosting_update_themes_automatically'), 'update1'); ?> value='1' /><label for="ZysysHostingThemeUpdater">Keep WordPress Themes Updated</input><br />
+<h3>Speed Optimizations</h3>
+<input type="checkbox" id="ZysysHostingImageCompression" name="ZysysHostingImageCompression" <?php checked(get_option('zysyshosting_keep_images_compressed'), 'compress1'); ?> value='1' /><label for="ZysysHostingImageCompression">Keep Images Compressed without Loosing Quality</label><br /><br />
 <?php if($optset) { ?>
 <input type="submit" name="ZysysHostingOptions" disabled style="font-style:italic" class="button-primary" value="Settings Updated." />
 <?php } else { ?>
@@ -205,6 +230,9 @@ function zysyshosting_maintenance() {
     if( !wp_next_scheduled( 'zysyshosting_maintenance_hourly' ) ) { 
         wp_schedule_event( time(), 'hourly', 'zysyshosting_maintenance_hourly' );
     } 
+    if((get_option('zysyshosting_keep_images_compressed') == 'compress1') && !wp_next_scheduled('zysyshosting_optimize_images') ) { 
+        wp_schedule_event( time(), 'daily', 'zysyshosting_optimize_images' );
+    }
 
     zysyshosting_authorize();
 
@@ -225,6 +253,16 @@ function zysyshosting_maintenance() {
     zysyshosting_wp_rules_check();
     global $wpdb;
     update_option('zysyshosting_optimizations_version', ZYSYSHOSTING_OPTIMIZATIONS_VERSION);
+}
+
+/* Runs the /scripts/optimize-images.pl program on ABSPATH
+ * @since 0.6.9
+ * @param NONE
+ * @return NONE
+ * @calledby zysyshosting_optimize_images hook
+ */
+function zysyshosting_optimize_images_proc() {
+    system('perl /scripts/optimize-images.pl --path=' . ABSPATH. ' --quiet 3>&2 2>&1 1>/dev/null');
 }
 
 function zysyshosting_plugin_perpetual_updater() {
@@ -450,7 +488,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.8');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.9');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
