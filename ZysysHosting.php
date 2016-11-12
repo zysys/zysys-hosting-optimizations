@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.9
+ * Version: 0.7.0
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -110,7 +110,7 @@ function zysyshosting_authorize() {
  * @calledfrom zysyshosting_maintenance
  */
 function zysyshosting_remove_installation_files() {
-    $install_files = array(ABSPATH.'readme.html', ABSPATH.'wp-config-sample.php', ABSPATH.'wp-admin/install.php');
+    $install_files = array(ABSPATH.'readme.html', ABSPATH.'wp-config-sample.php', ABSPATH.'wp-admin/install.php', ABSPATH.'license.txt');
 
     foreach ($install_files as $file)
         if (file_exists($file))
@@ -488,7 +488,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.6.9');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.7.0');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
