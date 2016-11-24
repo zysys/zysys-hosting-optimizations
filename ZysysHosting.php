@@ -97,6 +97,7 @@ function zysyshosting_authorize() {
     require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
     if (strpos(shell_exec("hostname"), ".zysyshosting.com") === false) {
         deactivate_plugins(plugin_basename( __FILE__ ));
+        zyerror('PLUGIN_UNAUTHORIZED', __FUNCTION__);
         return false;
     } else {
         return true;
@@ -287,6 +288,7 @@ function zysyshosting_zycache_setup() {
             shell_exec("/scripts/wp-optimize-domains.pl --run-zycache");
         } else {
             # symlink exists, but files aren't accessible.
+            zyerror('SYMLINK_EXISTS_BUT_ZYCACHE_NOT_YET_ACTIVE', __FUNCTION__);
             print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric."' ;
             return -1;
         }
@@ -294,7 +296,92 @@ function zysyshosting_zycache_setup() {
 }
 
 
-/* Adds param 0 to the file between param1 and param2 OR updates the content between param1 and param2
+/* Is a method that insures file integrity when updating a file
+ * @since 0.7.0
+ * @param filename, new_file_contents, 
+ *        additional_data_to_log_ie_calling_function, allow_file_to_start_as_null, 
+ *        internal_recursion_marker
+ * @return -1 [on consistancy error], 1 [on success], 0 [if not updated], ...log 
+ *         /var/log/zysyshostingwp.log updated with other errors
+ */
+function zysys_file_write($file, $contents, $addl_log = null, $override_null_init = 0, $recursion_depth = 0) {
+    if ($recursion_depth > 10)
+        return zyerror('RECURSION_DEPTH_GREATER_THAN_10_FILE_ACCURACY_DISPUTED', $addl_log);
+
+    if (!file_exists($file))
+        return zyerror('FILE_NOT_EXIST', $addl_log);
+
+    $current_contents = file_get_contents($file); 
+
+    if (strlen($current_contents) == 0 && !$override_null_init)
+        return zyerror('CURRENT_FILE_EMPTY', $addl_log);
+    
+    if ($contents == "")
+        return zyerror('CONTENTS_NULL', $addl_log);
+
+    if ($current_contents == $contents)
+        return 0;
+
+    # use this mode to prevent clobbering the file if we can't get a lock
+    $tempfile = fopen($file, "r+");
+    if (flock($tempfile, LOCK_EX)) {
+        ftruncate($tempfile, 0);
+        fwrite($tempfile, $contents);
+        fflush($tempfile);
+        sleep(5);
+        if (file_get_contents($file) != $contents) {
+            flock($tempfile, LOCK_UN);
+            fclose($tempfile);
+            zyerror('REQUIRED_RECURSE_DUE_TO_NONSYMMETRY', $addl_log);
+
+            if (is_resource($tempfile)) {
+                flock($tempfile, LOCK_UN);
+                fclose($tempfile);
+            }
+
+            zysys_file_write($file, $contents, $addl_log, 1, 1+$recursion_depth);
+        } else {
+            flock($tempfile, LOCK_UN);
+            fclose($tempfile);
+        }
+    } else {
+        if ($recursion_depth > 0)
+            return zyerror('TEMPFILE_NOT_SET_WITH_RECURSION_LEVEL_' . $recursion_depth, $addl_log);
+        return zyerror('COULD_NOT_GET_EXCLUSIVE_LOCK_ON_OUT_FILE', $addl_log);
+    }
+
+
+
+    if ($recursion_depth > 0)
+        zyerror('FILE_UPDATE_SUCCESS_ON_RECURSE_' . $recursion_depth, $addl_log);
+
+    return 1;
+
+}
+
+/* Allows for accurate debugging in the future to the log file.  It writes the 
+ * error code to the log file along with timestamp, and caller. NOTE: make sure 
+ * to mark in the error code where you would need to look for a bug.  So, it'll 
+ * mark that the bug is in the zysys_file_write function, but the problem may 
+ * be originated by the htaccess_adder, or more specifically in the 
+ * zysyshosting_wordpress_securing() function.
+ * @since 0.7.0
+ * @param error_code
+ * @return NONE (check ZYLOG for details)
+ */
+function zyerror($code, $extra = null) {
+    $caller = debug_backtrace()[1]['function'];
+    if ($extra)
+        $fullcode = $code . '[' . $extra . ']';
+    else
+        $fullcode = $code;
+    $line = sprintf("%s - %s() %s %s\n", date("M d, Y H:i:s"), $caller, $fullcode, __FILE__);
+    file_put_contents(ZYLOG, $line, FILE_APPEND | LOCK_EX); 
+}
+
+
+/* Adds param 0 to the file between param1 and param2 OR updates the content 
+ * between param1 and param2
  * Adds to ABSPATH . wp_config.php
  * @since 0.5.5
  * @param $content, $header, $footer
@@ -319,7 +406,7 @@ function wpconfig_adder($code, $openingtag, $closingtag) {
                 $wpconfigContent .= PHP_EOL . $openingtag . PHP_EOL . $code . PHP_EOL . $closingtag . PHP_EOL . $mark;
             }
         }
-        file_put_contents($wpconfigPath, $wpconfigContent);
+        zysys_file_write($wpconfigPath, $wpconfigContent, debug_backtrace()[1]['function']);
     }
 }
 
@@ -343,7 +430,7 @@ function msfiles_adder($code) {
         } else {
             $msfilesContent .= $code . PHP_EOL.$mark;
         }
-        file_put_contents($msfilesPath, $msfilesContent);
+        zysys_file_write($msfilesPath, $msfilesContent, debug_backtrace()[1]['function']);
     }
 }
 
@@ -390,7 +477,8 @@ EOL;
     $openingtag = "# BEGIN WordPress";
     $closingtag = "# END WordPress";
     if (strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($openingtag)) === false || strpos(zysyshosting_make_single_line($htaccessContent), zysyshosting_make_single_line($closingtag)) === false) {
-        file_put_contents("wp-cli.local.yml", $config);
+        touch("wp-cli.local.yml");
+        zysys_file_write("wp-cli.local.yml", $config, debug_backtrace()[1]['function']);
         system("/usr/sbin/wp --allow-root rewrite flush --hard 2>/dev/null 1>/dev/null 3>/dev/null");
         unlink("wp-cli.local.yml");
     }   
@@ -431,7 +519,7 @@ function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
         } else {
             $htaccessContent .= PHP_EOL . $openingtag . PHP_EOL . $code . PHP_EOL . $closingtag . PHP_EOL;
         }
-        file_put_contents($htaccessPath, $htaccessContent);
+        zysys_file_write($htaccessPath, $htaccessContent, debug_backtrace()[1]['function']);
     }
 }
 
@@ -451,6 +539,9 @@ function zysyshosting_make_single_line($str) {
  */
 
 function zysyshosting_define_constants() {
+
+    if (!defined('ZYLOG'))
+        define('ZYLOG', '/var/log/zysyshostingwp.log');
 
     if (!defined('ZYSYS_IS_SUBBLOG'))
         define('ZYSYS_IS_SUBBLOG', get_current_blog_id() == 1? 0 : 1);
