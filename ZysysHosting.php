@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.7.0
+ * Version: 0.7.1
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -33,7 +33,13 @@
 function zysyshosting_updater_init() {
 
     /* Load Plugin Updater */
-    require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
+    # If the plugin is not there, we need to reinstall the plugin by force as it was corrupted.
+    if (!file_exists(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php')) {
+        exec('/scripts/wp-optimize-domains.pl --emergency-reinstall --abspath="'.ABSPATH.'" ');
+        require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
+    } else {
+        require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
+    }
 
     /* Updater Config */
     $config = array(
@@ -579,7 +585,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.7.0');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.7.1');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
