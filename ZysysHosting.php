@@ -49,12 +49,24 @@ function zysyshosting_updater_init() {
 zysyshosting_define_constants();
 
 # If the plugin updater is not there, we need to reinstall the plugin by force as it was corrupted.
-require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-if (!file_exists(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php')) {
-    exec('/scripts/wp-optimize-domains.pl --emergency-reinstall --abspath="'.ABSPATH.'" ');
-    deactivate_plugins(plugin_basename( __FILE__ ));
+# If the plugin updater is not there, we need to reinstall the plugin by force as it was corrupted.
+if ( file_exists(ABSPATH . 'wp-admin/includes/plugin.php') ) {
+    require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    $included = true;
+}
+elseif ( defined('WP_ADMIN_PATH') && !file_exists(WP_ADMIN_PATH . '/includes/plugin.php') ) {
+    require_once(WP_ADMIN_PATH . '/includes/plugin.php');
+    $included = true;
 } else {
-    add_action( 'init', 'zysyshosting_updater_init' );
+    $included = false;
+}
+if ($included) {
+    if (!file_exists(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php')) {
+        exec('/scripts/wp-optimize-domains.pl --emergency-reinstall --abspath="'.ABSPATH.'" ');
+        deactivate_plugins(plugin_basename( __FILE__ )); 
+    } else {
+        add_action( 'init', 'zysyshosting_updater_init' );
+    }   
 }
 
 add_action('admin_menu', 'zysyshosting_add_pages');
