@@ -33,13 +33,7 @@
 function zysyshosting_updater_init() {
 
     /* Load Plugin Updater */
-    # If the plugin is not there, we need to reinstall the plugin by force as it was corrupted.
-    if (!file_exists(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php')) {
-        exec('/scripts/wp-optimize-domains.pl --emergency-reinstall --abspath="'.ABSPATH.'" ');
-        require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
-    } else {
-        require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
-    }
+    require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
 
     /* Updater Config */
     $config = array(
@@ -54,7 +48,15 @@ function zysyshosting_updater_init() {
 
 zysyshosting_define_constants();
 
-add_action( 'init', 'zysyshosting_updater_init' );
+# If the plugin updater is not there, we need to reinstall the plugin by force as it was corrupted.
+require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+if (!file_exists(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php')) {
+    exec('/scripts/wp-optimize-domains.pl --emergency-reinstall --abspath="'.ABSPATH.'" ');
+    deactivate_plugins(plugin_basename( __FILE__ ));
+} else {
+    add_action( 'init', 'zysyshosting_updater_init' );
+}
+
 add_action('admin_menu', 'zysyshosting_add_pages');
 add_action('upgrader_process_complete', 'zysyshosting_maintenance');
 register_activation_hook(__FILE__, 'zysyshosting_optimizations_activation');
