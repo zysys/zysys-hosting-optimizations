@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Carp;
 
-my @files = qw| ZysysHosting.php includes |;
+my @files = qw| ZysysHosting.php |;
 
 open (ZY, 'ZysysHosting.php');
 my $version = 0;

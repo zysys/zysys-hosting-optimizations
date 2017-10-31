@@ -300,8 +300,6 @@ function zysyshosting_admin_panel() {
 <hr />
 <h2>Install Extra Plugins</h2>
 <p>We recommend certain plugins (some of which we've purchased licenses, others are open source).  Use the buttons below to install any of them.</p>  
-<table>
-<tr><th>Plugin Purpose</th><th>Plugin Name</th><th>Link to Install/Activate</th></tr>
 </form>
 <p>We have licensed software for you to use!  Install the software below and it will install the license key after it activates the plugin.  If you need to reinstall all license keys, click this button:</p>
 <form name="zysyshostingrekey" id="zysyshostingrekey" method="post" action="">
@@ -312,8 +310,10 @@ function zysyshosting_admin_panel() {
 <?php } ?>
 
 </form>
+<br />
 <form name="zysyshostingplugins" id="zysyshostingplugins" method="post" action="">
 <table>
+<tr><th>Plugin Purpose</th><th>Plugin Name</th><th>Link to Install/Activate</th></tr>
 <?php
 foreach ($thirdPartyPlugins as $plugin) {
 ?>
@@ -1659,7 +1659,5 @@ class Plugin_Updater{
         <?php }
     }
 }
-
-
 
 
