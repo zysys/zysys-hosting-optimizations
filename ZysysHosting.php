@@ -150,11 +150,14 @@ function zysyshosting_add_pages() {
 }
 
 function zysyshosting_admin_panel() {
-
+/*
+ * array(Purpose, Plugin Name, Internal ID, WordPress Plugin Identifier, WordPress Plugin Path, Update URL if not in the repo, License Key API ID)
+ */
     $thirdPartyPlugins = array(
         array('SEO', 'The SEO Framework', 'seo-framework', 'autodescription', 'autodescription/autodescription.php', null, null),
         array('Drag & Drop Editor', 'Beaver Builder Plugin (Standard Version)', 'beaver-builder', 'bb-plugin', 'bb-plugin/fl-builder.php', 'http://updates.wpbeaverbuilder.com/?fl-api-method=download_update&domain=' . site_url() . '&license=7465622e666c666c6d4075706e6d&product=Beaver+Builder+Plugin+%28Standard+Version%29&slug=bb-plugin&release=stable', 'BEAVER_BUILDER'),
         array('Spam Protection', 'Akismet Anti-Spam', 'akismet', 'akismet', 'akismet/akismet.php', null, 'AKISMET'),
+        array('Lazy Loading', 'Lazy Load by WP Rocket', 'lazy-load', 'rocket-lazy-load', 'rocket-lazy-load/rocket-lazy-load.php', null, null),
     ); 
     if (!current_user_can('update_core')) {
         wp_die( __('You do not have sufficient permissions to access this page.') );
