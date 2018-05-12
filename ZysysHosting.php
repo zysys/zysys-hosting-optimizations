@@ -3,7 +3,7 @@
  * Plugin Name: Zysys Hosting Optimizations
  * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
  * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured.
- * Version: 0.7.2
+ * Version: 0.7.3
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -58,16 +58,16 @@ zysyshosting_do_updates_if_requested();
 
 if (!ZYSYS_IS_SUBBLOG) {
     # Setup Zycache
-    if (USE_ZYCACHE_IMG) {
+    if (defined('USE_ZYCACHE_IMG') && USE_ZYCACHE_IMG) {
         add_filter('the_content', 'zysyshosting_zycache_uploads_setup');
         add_filter('wp_get_attachment_url', 'zycache_thumbnail_setup');
     }
 
-    if (USE_ZYCACHE_JS)
+    if (defined('USE_ZYCACHE_JS') && USE_ZYCACHE_JS)
         add_filter('script_loader_src', 'zysyshosting_zycache_script_setup');
-    if (USE_ZYCACHE_CSS)
+    if (defined('USE_ZYCACHE_CSS') && USE_ZYCACHE_CSS)
         add_filter('style_loader_src', 'zysyshosting_zycache_style_setup');
-    if (USE_ZYCACHE_IMG || USE_ZYCACHE_JS || USE_ZYCACHE_CSS)
+    if ((defined('USE_ZYCACHE_IMG') && USE_ZYCACHE_IMG) || defined('USE_ZYCACHE_JS') && USE_ZYCACHE_JS || defined('USE_ZYCACHE_CSS') && USE_ZYCACHE_CSS)
         add_action('wp_head', 'zysyshosting_zycache_dns_prefetch');
 }
 
@@ -744,7 +744,7 @@ function zysyshosting_define_constants() {
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
 
     if (!defined('ZYSYSHOSTING_OPTIMIZATIONS_VERSION'))
-        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.7.2');
+        define('ZYSYSHOSTING_OPTIMIZATIONS_VERSION', '0.7.3');
 
     if(!defined('ZYSYS_HOSTING_URL_PREP_REGEX'))
         define('ZYSYS_HOSTING_URL_PREP_REGEX', '|(https?:){0,1}//(www\.){0,1}|');
