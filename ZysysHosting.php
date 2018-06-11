@@ -720,7 +720,7 @@ function zysyshosting_define_constants() {
     if (!defined('ZYCACHE_HTTPS'))
         define('ZYCACHE_HTTPS', 'https://zysyshosting.cachefly.net');
 
-    if ((!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 443) {
+    /*if ((!isset($_SERVER['HTTPS']) || !$_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 443) {
         if (!defined('ZYCACHE'))
             define('ZYCACHE', 'http://www.zycache.com');
         if (!defined('ZYCACHE_JS'))
@@ -729,7 +729,7 @@ function zysyshosting_define_constants() {
             define('ZYCACHE_CSS', 'http://css.zycache.com');
         if (!defined('ZYCACHE_IMAGE'))
             define('ZYCACHE_IMAGE', 'http://img.zycache.com');
-    } else {
+        } else {*/
         if (!defined('ZYCACHE'))
             define('ZYCACHE', ZYCACHE_HTTPS);
         if (!defined('ZYCACHE_JS'))
@@ -738,7 +738,7 @@ function zysyshosting_define_constants() {
             define('ZYCACHE_CSS', ZYCACHE_HTTPS);
         if (!defined('ZYCACHE_IMAGE'))
             define('ZYCACHE_IMAGE', ZYCACHE_HTTPS);
-    }
+        /*}*/
 
     if (!defined('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION'))
         define('ZYSYS_HOSTING_OBJECT_CACHE_LATEST_VERSION', '1.0');
