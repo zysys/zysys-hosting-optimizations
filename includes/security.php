@@ -31,7 +31,7 @@ function zysyshosting_remove_installation_files() {
  * @return NONE
  */
 function zysyshosting_wp_permissions() {
-    shell_exec('find * -maxdepth 0 -type f -name "index.php" -o -name "license.txt" -o -name "readme.html" -o -name "wp-activate.php" -o -name "wp-blog-header.php" -o -name "wp-comments-post.php" -o -name "wp-config-sample.php" -o -name "wp-cron.php" -o -name "wp-links-opml.php" -o -name "wp-load.php" -o -name "wp-login.php" -o -name "wp-mail.php" -o -name "wp-settings.php" -o -name "wp-signup.php" -o -name "wp-trackback.php" -o -name "xmlrpc.php" -o -name "wp-config.php" -exec chmod 644 {} \; &');
+    shell_exec('find ' . ABSPATH . ' -maxdepth 1 -type f -name "index.php" -o -name "license.txt" -o -name "readme.html" -o -name "wp-activate.php" -o -name "wp-blog-header.php" -o -name "wp-comments-post.php" -o -name "wp-config-sample.php" -o -name "wp-cron.php" -o -name "wp-links-opml.php" -o -name "wp-load.php" -o -name "wp-login.php" -o -name "wp-mail.php" -o -name "wp-settings.php" -o -name "wp-signup.php" -o -name "wp-trackback.php" -o -name "xmlrpc.php" -o -name "wp-config.php" -exec chmod 644 {} \; &');
     shell_exec("chmod 755 " . escapeshellcmd(WP_CONTENT_DIR) . " &");
     shell_exec("chmod 755 " . escapeshellcmd(ABSPATH. '/'.WPINC.'/') . " &");
     shell_exec("chmod 755 " . escapeshellcmd(ABSPATH. '/wp-admin/') . " &");
