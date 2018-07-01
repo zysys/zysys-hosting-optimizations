@@ -1,5 +1,15 @@
 <?php
 
+add_action('zysyshosting_maintenance_action', 'zysyshosting_remove_installation_files');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_wp_secure_files');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_wordpress_securing');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_wp_permissions');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_disable_indexes');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_disable_php_execution');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_ms_files');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_wp_rules_check');
+
+
 /* Removes certain wordpress installation files
  * @since 0.6.3
  * @param NONE

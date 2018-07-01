@@ -1,4 +1,6 @@
 <?php
+add_action('zysyshosting_maintenance_action', 'zysyshosting_wp_cron_setup');
+add_action('zysyshosting_maintenance_action', 'zysyshosting_plugin_perpetual_updater');
 
 /* Disables WP CRON from running on pageloads so the server can run the wp-cron automatically
  * @calls wpconfig_adder && uses the wp-optimize-domains script to add it to cron automatically
