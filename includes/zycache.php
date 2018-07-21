@@ -53,7 +53,7 @@ function zycache_thumbnail_setup($url) {
         return $url;
     $originalDomain = get_bloginfo('url');
     $domain = zysyshosting_clean_domain_prefix($originalDomain);
-    return str_replace($domain, zysyshosting_clean_domain_prefix(ZYCACHE_IMAGE) . '/' . $domain, $url); 
+    return str_replace('www.', '', str_replace($domain, zysyshosting_clean_domain_prefix(ZYCACHE_IMAGE) . '/' . $domain, $url)); 
 }
 
 /* Replace urls in the_content of relative and explict urls
