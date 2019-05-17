@@ -22,7 +22,7 @@ function zysyshosting_admin_panel() {
         array('Drag & Drop Editor', 'Beaver Builder Plugin (Standard Version)', 'beaver-builder', 'bb-plugin', 'bb-plugin/fl-builder.php', 'http://updates.wpbeaverbuilder.com/?fl-api-method=download_update&domain=' . site_url() . '&license=7465622e666c666c6d4075706e6d&product=Beaver+Builder+Plugin+%28Standard+Version%29&slug=bb-plugin&release=stable', 'BEAVER_BUILDER'),
         array('Spam Protection', 'Akismet Anti-Spam', 'akismet', 'akismet', 'akismet/akismet.php', null, 'AKISMET'),
         array('Lazy Loading', 'Lazy Load by WP Rocket', 'lazy-load', 'rocket-lazy-load', 'rocket-lazy-load/rocket-lazy-load.php', null, null),
-        array('Contact and Other Forms', 'WPForms', 'wp-forms', 'wpforms', 'wpforms/wpforms.php', 'https://zysys.org/zycms/uploads/2019/05/wpforms.zip', 'WPFORMS'),
+        array('Contact and Other Forms', 'WPForms', 'wp-forms', 'wpforms', 'wpforms/wpforms.php', 'https://zysys.org/zycms/uploads/2019/05/wpforms.zip', 'WPForms'),
     ); 
     if (!current_user_can('update_core')) {
         wp_die( __('You do not have sufficient permissions to access this page.') );
