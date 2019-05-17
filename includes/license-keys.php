@@ -23,6 +23,7 @@ function zyapi_keys() {
 function zyapi_keys_disable() {
     zydisable_service('AKISMET');
     zydisable_service('BEAVER_BUILDER');
+    zydisable_service('WPFORMS');
     zydisable_service('AUDIOTHEME_GOOGLE_MAPS');
 
 }
@@ -60,6 +61,13 @@ EOC;
     wpconfig_adder($akismet, "## BEGIN ZYSYSHOSTING_AKISMET_API", "## END ZYSYSHOSTING_AKISMET_API");
     } elseif ($service == 'AUDIOTHEME_GOOGLE_MAPS') {
         update_option('audiotheme_google_maps_api_key', zyget_key('audiotheme-google-maps'));
+    } elseif ($service == 'WPFORMS') {
+        $option                = array(key=>zyget_key('wpforms'));
+        $option['type']        = 'elite';
+        $option['is_expired']  = false;
+        $option['is_disabled'] = false;
+        $option['is_invalid']  = false;
+        update_option( 'wpforms_license', $option );
     }
 }
 
