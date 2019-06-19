@@ -12,6 +12,8 @@ function zyapi_keys() {
             zyenable_service('BEAVER_BUILDER');
         if (is_plugin_active('audiotheme/audiotheme.php'))
             zyenable_service('AUDIOTHEME_GOOGLE_MAPS');
+        if (is_plugin_active('wpforms/wpforms.php'))
+            zyenable_service('WPFORMS');
     }
 }
 
