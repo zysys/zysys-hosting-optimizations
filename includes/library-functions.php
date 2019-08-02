@@ -17,7 +17,7 @@ function zyerror($code, $extra = null) {
     else
         $fullcode = $code;
     $line = sprintf("%s - %s() %s %s\n", date("M d, Y H:i:s"), $caller, $fullcode, __FILE__);
-    file_put_contents(ZYLOG, $line, FILE_APPEND | LOCK_EX); 
+    file_put_contents(ZYLOG, $line, FILE_APPEND | LOCK_EX);
 }
 
 /* Converts multiple lines to one line for the purpose of file comparisions
@@ -45,15 +45,16 @@ function zysyshosting_clean_domain_prefix($domain) {
  * @calledfrom zysyshosting_maintenance, zyapi_keys
  */
 function zysyshosting_authorize() {
-    require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    require_once(ABSPATH . 'wp-admin/includes/plugin.php');
     if (strpos(shell_exec("hostname"), ".zysyshosting.com") === false) {
-        deactivate_plugins(plugin_basename( __FILE__ ));
+        deactivate_plugins(plugin_basename(__FILE__));
         zyerror('PLUGIN_UNAUTHORIZED', __FUNCTION__);
         return false;
     } else {
         return true;
     }
 }
+
 /* Checks to see if a plugin is installed.
 * @since 0.7.2
 * @param The plugin title
@@ -87,5 +88,5 @@ function zysyshosting_install_other_plugin_link($type, $plugin_slug) {
     } else {
         return;
     }
-    return wp_nonce_url( add_query_arg( array( 'action' => $action, 'plugin' => $plugin_slug), admin_url( $file )), $type.'_'.$plugin_slug);
+    return wp_nonce_url(add_query_arg(array('action' => $action, 'plugin' => $plugin_slug), admin_url($file)), $type . '_' . $plugin_slug);
 }

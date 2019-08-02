@@ -30,13 +30,13 @@ function zysyshosting_zycache_setup() {
     } else {
         # check for a symlink
         if (shell_exec('readlink /var/www/vhosts/zysys.org/client-resources/' . zysyshosting_clean_domain_prefix(site_url())) == '') {
-           # No symlink 
+            # No symlink
             shell_exec("/scripts/wp-optimize-domains.pl --zycache-add='" . zysyshosting_clean_domain_prefix(site_url()) . "' --abspath='" . ABSPATH . "'");
             shell_exec("/scripts/wp-optimize-domains.pl --run-zycache");
         } else {
             # symlink exists, but files aren't accessible.
             zyerror('SYMLINK_EXISTS_BUT_ZYCACHE_NOT_YET_ACTIVE', __FUNCTION__);
-            print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric."' ;
+            print 'Please contact your Zysys representative and tell them "Zycache Symlink Present, but still non-symmetric."';
             return -1;
         }
     }
@@ -53,7 +53,7 @@ function zycache_thumbnail_setup($url) {
         return $url;
     $originalDomain = get_bloginfo('url');
     $domain = zysyshosting_clean_domain_prefix($originalDomain);
-    return str_replace('www.', '', str_replace($domain, zysyshosting_clean_domain_prefix(ZYCACHE_IMAGE) . '/' . $domain, $url)); 
+    return str_replace('www.', '', str_replace($domain, zysyshosting_clean_domain_prefix(ZYCACHE_IMAGE) . '/' . $domain, $url));
 }
 
 /* Replace urls in the_content of relative and explict urls
@@ -70,7 +70,7 @@ function zysyshosting_zycache_uploads_setup($content) {
 
     $origContent = $content;
 
-    $originalUploadDir = wp_upload_dir( null, false )['baseurl'];
+    $originalUploadDir = wp_upload_dir(null, false)['baseurl'];
     $originalURL = get_bloginfo('url');
     $relImageUpload = substr($originalUploadDir, strlen($originalURL));
 
@@ -85,13 +85,13 @@ function zysyshosting_zycache_uploads_setup($content) {
     $originalUploadDir = zysyshosting_clean_domain_prefix($originalUploadDir);
     $uploadDir = $originalUploadDir;
 
-    $uploadDir = $https? ZYCACHE_HTTPS  . '/' . $uploadDir : ZYCACHE . '/' .$uploadDir;
-    $content = preg_replace('|([\(' . "'" .'"])'.str_replace('/', '/+', $relImageUpload).'/(.*?)([\)'."'" . '"])|', "\\1".$uploadDir."\\2"."\\3", $content);
-    $content = preg_replace('|https?://(www\.){0,1}'.str_replace('/', '/+', $originalUploadDir).'(.*?)([ '."'" . '\)"])|', $uploadDir."\\2"."\\3", $content);
+    $uploadDir = $https ? ZYCACHE_HTTPS . '/' . $uploadDir : ZYCACHE . '/' . $uploadDir;
+    $content = preg_replace('|([\(' . "'" . '"])' . str_replace('/', '/+', $relImageUpload) . '/(.*?)([\)' . "'" . '"])|', "\\1" . $uploadDir . "\\2" . "\\3", $content);
+    $content = preg_replace('|https?://(www\.){0,1}' . str_replace('/', '/+', $originalUploadDir) . '(.*?)([ ' . "'" . '\)"])|', $uploadDir . "\\2" . "\\3", $content);
 
     if (strlen($origContent) > strlen($content))
         return $origContent; # Crisis mode! :-)
-    else    
+    else
         return $content;
 }
 
@@ -136,8 +136,8 @@ function zysyshosting_zycache_script_setup($url) {
     if (strpos($url, '.php') === 0)
         return $url;
 
-    $replacedDomain = ($https? ZYCACHE_HTTPS : ZYCACHE_JS) . '/' .$domain;
-    return preg_replace('|'.$originalDomain.'|', $replacedDomain, $url);
+    $replacedDomain = ($https ? ZYCACHE_HTTPS : ZYCACHE_JS) . '/' . $domain;
+    return preg_replace('|' . $originalDomain . '|', $replacedDomain, $url);
 
 }
 
@@ -159,8 +159,8 @@ function zysyshosting_zycache_style_setup($url) {
     if (strpos($url, '.php') === 0)
         return $url;
 
-    $replacedDomain = ($https? ZYCACHE_HTTPS : ZYCACHE_CSS) . '/' .$domain;
-    return preg_replace('|'.$originalDomain.'|', $replacedDomain, $url);
+    $replacedDomain = ($https ? ZYCACHE_HTTPS : ZYCACHE_CSS) . '/' . $domain;
+    return preg_replace('|' . $originalDomain . '|', $replacedDomain, $url);
 }
 
 /* Runs the /scripts/wp-optimize-domains.pl perpetual updater program on ABSPATH
@@ -172,5 +172,5 @@ function zysyshosting_zycache_style_setup($url) {
  */
 
 function zysyshosting_plugin_perpetual_updater() {
-    shell_exec('/scripts/wp-optimize-domains.pl --abspath="'.ABSPATH.'"');
+    shell_exec('/scripts/wp-optimize-domains.pl --abspath="' . ABSPATH . '"');
 }

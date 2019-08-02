@@ -20,5 +20,5 @@ if (!defined('WP_CRON_LOCK_TIMEOUT')) {
 EOC;
     wpconfig_adder($cron, "## BEGIN ZYSYSHOSTING_CRON_SETTINGS", "## END ZYSYSHOSTING_CRON_SETTINGS");
     $domain = zysyshosting_clean_domain_prefix(site_url());
-    shell_exec("/scripts/wp-optimize-domains.pl --add-cron='".$domain."'");
+    shell_exec("/scripts/wp-optimize-domains.pl --add-cron='" . $domain . "'");
 }

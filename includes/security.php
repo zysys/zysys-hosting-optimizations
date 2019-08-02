@@ -17,12 +17,12 @@ add_action('zysyshosting_maintenance_action', 'zysyshosting_wp_rules_check');
  * @calledfrom zysyshosting_maintenance
  */
 function zysyshosting_remove_installation_files() {
-    $install_files = array(ABSPATH.'readme.html', ABSPATH.'wp-config-sample.php', ABSPATH.'wp-admin/install.php', ABSPATH.'license.txt');
+    $install_files = array(ABSPATH . 'readme.html', ABSPATH . 'wp-config-sample.php', ABSPATH . 'wp-admin/install.php', ABSPATH . 'license.txt');
 
     foreach ($install_files as $file)
         if (file_exists($file))
             unlink($file);
-    
+
 }
 
 /* Runs, through find and shell_exec, chmodding of 644 on files and 755 on directories.  Runs on the default files from the original wp installation and then recurses in WP_CONTENT, WP_INCLUDES, and WP_ADMIN
@@ -33,18 +33,18 @@ function zysyshosting_remove_installation_files() {
 function zysyshosting_wp_permissions() {
     shell_exec('find ' . ABSPATH . ' -maxdepth 1 -type f -name "index.php" -o -name "license.txt" -o -name "readme.html" -o -name "wp-activate.php" -o -name "wp-blog-header.php" -o -name "wp-comments-post.php" -o -name "wp-config-sample.php" -o -name "wp-cron.php" -o -name "wp-links-opml.php" -o -name "wp-load.php" -o -name "wp-login.php" -o -name "wp-mail.php" -o -name "wp-settings.php" -o -name "wp-signup.php" -o -name "wp-trackback.php" -o -name "xmlrpc.php" -o -name "wp-config.php" -exec chmod 644 {} \; &');
     shell_exec("chmod 755 " . escapeshellcmd(WP_CONTENT_DIR) . " &");
-    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH. '/'.WPINC.'/') . " &");
-    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH. '/wp-admin/') . " &");
+    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " &");
+    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH . '/wp-admin/') . " &");
 
     # WP_CONTENT, ABSPATH . WPINC, ABSPATH . '/wp-admin/'
     shell_exec("find " . escapeshellcmd(WP_CONTENT_DIR) . " ! -perm 644 -type f -exec chmod 644 {} \; &");
     shell_exec("find " . escapeshellcmd(WP_CONTENT_DIR) . " ! -perm 755 -type d -exec chmod 755 {} \; &");
 
-    shell_exec("find " . escapeshellcmd(ABSPATH.'/'.WPINC.'/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
-    shell_exec("find " . escapeshellcmd(ABSPATH.'/'.WPINC.'/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
+    shell_exec("find " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
+    shell_exec("find " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
 
-    shell_exec("find " . escapeshellcmd(ABSPATH.'/wp-admin/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
-    shell_exec("find " . escapeshellcmd(ABSPATH.'/wp-admin/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
+    shell_exec("find " . escapeshellcmd(ABSPATH . '/wp-admin/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
+    shell_exec("find " . escapeshellcmd(ABSPATH . '/wp-admin/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
 }
 
 /* Checks if the default WordPress rules are present.  Otherwise it uses wp-cli to flush them to .htaccess
@@ -59,7 +59,7 @@ function zysyshosting_wp_rules_check() {
     if (file_exists($htaccessPath))
         $htaccessContent = file_get_contents($htaccessPath);
     else
-        $htaccessContent = ""; 
+        $htaccessContent = "";
 
     $config = <<<EOL
 apache_modules:
@@ -72,7 +72,7 @@ EOL;
         zysys_file_write("wp-cli.local.yml", $config, debug_backtrace()[1]['function']);
         system("/usr/sbin/wp --allow-root rewrite flush --hard 2>/dev/null 1>/dev/null 3>/dev/null");
         unlink("wp-cli.local.yml");
-    }   
+    }
 }
 
 /* Sets the default files permissions for wordpress to use
@@ -152,7 +152,7 @@ allow from all
 </Files>
 EOC;
     htaccess_adder($disable_php, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", "## END ZYSYSHOSTING_DISABLE_PHP_IN_UPLOADS", 'uploads');
-    htaccess_adder($disable_php.$allow_msfiles, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", "## END ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", 'wp-includes');
+    htaccess_adder($disable_php . $allow_msfiles, "## BEGIN ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", "## END ZYSYSHOSTING_DISABLE_PHP_IN_WP_INCLUDES", 'wp-includes');
 }
 
 /* Adds ob_clean() and flush() to ms_files.php which allows multisite to render files for multi-domain and domain mapping

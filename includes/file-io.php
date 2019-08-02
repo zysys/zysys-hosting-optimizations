@@ -1,5 +1,5 @@
 <?php
-/* Adds param 0 to the file between param1 and param2 OR updates the content 
+/* Adds param 0 to the file between param1 and param2 OR updates the content
  * between param1 and param2
  * Adds to ABSPATH . wp_config.php
  * @since 0.5.5
@@ -45,9 +45,9 @@ function msfiles_adder($code) {
         $mark = 'readfile( $file );';
         $beforeMark = strpos(zysyshosting_make_single_line($msfilesContent), $mark);
         if ($beforeMark !== false) {
-            $msfilesContent = str_replace($mark, PHP_EOL.$code.PHP_EOL.$mark, $msfilesContent);
+            $msfilesContent = str_replace($mark, PHP_EOL . $code . PHP_EOL . $mark, $msfilesContent);
         } else {
-            $msfilesContent .= $code . PHP_EOL.$mark;
+            $msfilesContent .= $code . PHP_EOL . $mark;
         }
         zysys_file_write($msfilesPath, $msfilesContent, debug_backtrace()[1]['function']);
     }
@@ -63,9 +63,9 @@ function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
     if ($path == null || $path == 'default') {
         $htaccessPath = ABSPATH . '.htaccess';
     } elseif ($path == 'uploads') {
-        $htaccessPath = wp_upload_dir( null, false )['basedir'] . '/.htaccess';
-        if (!is_dir(wp_upload_dir( null, false )['basedir'])) {
-           return;
+        $htaccessPath = wp_upload_dir(null, false)['basedir'] . '/.htaccess';
+        if (!is_dir(wp_upload_dir(null, false)['basedir'])) {
+            return;
         }
     } elseif ($path == 'wp-includes') {
         $htaccessPath = ABSPATH . WPINC . '/.htaccess';
@@ -94,10 +94,10 @@ function htaccess_adder($code, $openingtag, $closingtag, $path = null) {
 
 /* Is a method that insures file integrity when updating a file
  * @since 0.7.0
- * @param filename, new_file_contents, 
- *        additional_data_to_log_ie_calling_function, allow_file_to_start_as_null, 
+ * @param filename, new_file_contents,
+ *        additional_data_to_log_ie_calling_function, allow_file_to_start_as_null,
  *        internal_recursion_marker
- * @return -1 [on consistancy error], 1 [on success], 0 [if not updated], ...log 
+ * @return -1 [on consistancy error], 1 [on success], 0 [if not updated], ...log
  *         /var/log/zysyshostingwp.log updated with other errors
  */
 function zysys_file_write($file, $contents, $addl_log = null, $override_null_init = 0, $recursion_depth = 0) {
@@ -107,11 +107,11 @@ function zysys_file_write($file, $contents, $addl_log = null, $override_null_ini
     if (!file_exists($file))
         return zyerror('FILE_NOT_EXIST', $addl_log);
 
-    $current_contents = file_get_contents($file); 
+    $current_contents = file_get_contents($file);
 
     if (strlen($current_contents) == 0 && !$override_null_init)
         return zyerror('CURRENT_FILE_EMPTY', $addl_log);
-    
+
     if ($contents == "")
         return zyerror('CONTENTS_NULL', $addl_log);
 
@@ -135,7 +135,7 @@ function zysys_file_write($file, $contents, $addl_log = null, $override_null_ini
                 fclose($tempfile);
             }
 
-            zysys_file_write($file, $contents, $addl_log, 1, 1+$recursion_depth);
+            zysys_file_write($file, $contents, $addl_log, 1, 1 + $recursion_depth);
         } else {
             flock($tempfile, LOCK_UN);
             fclose($tempfile);
@@ -145,7 +145,6 @@ function zysys_file_write($file, $contents, $addl_log = null, $override_null_ini
             return zyerror('TEMPFILE_NOT_SET_WITH_RECURSION_LEVEL_' . $recursion_depth, $addl_log);
         return zyerror('COULD_NOT_GET_EXCLUSIVE_LOCK_ON_OUT_FILE', $addl_log);
     }
-
 
 
     if ($recursion_depth > 0)

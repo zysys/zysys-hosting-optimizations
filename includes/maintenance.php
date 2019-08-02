@@ -12,11 +12,11 @@ add_action('zysyshosting_maintenance_hourly', 'zysyshosting_maintenance');
  */
 function zysyshosting_maintenance() {
 
-    if( !wp_next_scheduled( 'zysyshosting_maintenance_hourly' ) ) { 
-        wp_schedule_event( time(), 'hourly', 'zysyshosting_maintenance_hourly' );
-    } 
-    if((get_option('zysyshosting_keep_images_compressed') == 'compress1') && !wp_next_scheduled('zysyshosting_optimize_images') ) { 
-        wp_schedule_event( time(), 'daily', 'zysyshosting_optimize_images' );
+    if (!wp_next_scheduled('zysyshosting_maintenance_hourly')) {
+        wp_schedule_event(time(), 'hourly', 'zysyshosting_maintenance_hourly');
+    }
+    if ((get_option('zysyshosting_keep_images_compressed') == 'compress1') && !wp_next_scheduled('zysyshosting_optimize_images')) {
+        wp_schedule_event(time(), 'daily', 'zysyshosting_optimize_images');
     }
 
     zysyshosting_authorize();

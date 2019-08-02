@@ -11,5 +11,5 @@ add_action('zysyshosting_optimize_images', 'zysyshosting_optimize_images_proc');
  */
 
 function zysyshosting_optimize_images_proc() {
-    system('perl /scripts/optimize-images.pl --path=' . ABSPATH. ' --quiet 3>&2 2>&1 1>/dev/null');
+    system('perl /scripts/optimize-images.pl --path=' . ABSPATH . ' --quiet 3>&2 2>&1 1>/dev/null');
 }

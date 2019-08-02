@@ -22,8 +22,8 @@ if (!defined('USE_ZYCACHE_JS')) {
 EOC;
     wpconfig_adder($zycache, "## BEGIN ZYCACHE_SETTINGS", "## END ZYCACHE_SETTINGS");
 
-    if( !wp_next_scheduled( 'zysyshosting_optimizations_updates' ) ) {
-        wp_schedule_event( time(), 'daily', 'zysyshosting_optimizations_updates' );
+    if (!wp_next_scheduled('zysyshosting_optimizations_updates')) {
+        wp_schedule_event(time(), 'daily', 'zysyshosting_optimizations_updates');
     }
     zysyshosting_maintenance();
     zyapi_keys();

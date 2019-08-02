@@ -35,7 +35,7 @@ function zyapi_keys_disable() {
  * @param service to get the api key
  * @return api key
  * @calledfrom zyenable_service, zydisable_service
- */ 
+ */
 function zyget_key($service) {
     return exec('/scripts/get-api.pl ' . $service);
 }
@@ -45,7 +45,7 @@ function zyget_key($service) {
  * @param service to enable
  * @return NONE
  * @calledby zyapi_keys
- */ 
+ */
 function zyenable_service($service) {
     if ($service == 'BEAVER_BUILDER') {
         # Run this in the maintenance proc...
@@ -53,23 +53,23 @@ function zyenable_service($service) {
         FLUpdater::save_subscription_license(zyget_key('beaver-builder'));
     } elseif ($service == 'AKISMET') {
         # Akismet API Key
-$akismet = <<<EOC
+        $akismet = <<<EOC
 # Make use of the Zysys Hosting AKISMET API key if it isn't already defined.
 if (!defined('WPCOM_API_KEY')) {
     define('WPCOM_API_KEY', 'AKISMET_API_KEY');
 }
 EOC;
-    $akismet = str_replace('AKISMET_API_KEY', zyget_key('akismet'), $akismet);
-    wpconfig_adder($akismet, "## BEGIN ZYSYSHOSTING_AKISMET_API", "## END ZYSYSHOSTING_AKISMET_API");
+        $akismet = str_replace('AKISMET_API_KEY', zyget_key('akismet'), $akismet);
+        wpconfig_adder($akismet, "## BEGIN ZYSYSHOSTING_AKISMET_API", "## END ZYSYSHOSTING_AKISMET_API");
     } elseif ($service == 'AUDIOTHEME_GOOGLE_MAPS') {
         update_option('audiotheme_google_maps_api_key', zyget_key('audiotheme-google-maps'));
     } elseif ($service == 'WPFORMS') {
-        $option                = array(key=>zyget_key('wpforms'));
-        $option['type']        = 'elite';
-        $option['is_expired']  = false;
+        $option = array(key => zyget_key('wpforms'));
+        $option['type'] = 'elite';
+        $option['is_expired'] = false;
         $option['is_disabled'] = false;
-        $option['is_invalid']  = false;
-        update_option( 'wpforms_license', $option );
+        $option['is_invalid'] = false;
+        update_option('wpforms_license', $option);
     }
 }
 
@@ -78,17 +78,17 @@ EOC;
  * @param service to disable
  * @return NONE
  * @calledby zyapi_keys_disable
- */ 
+ */
 function zydisable_service($service) {
     if ($service == 'BEAVER_BUILDER') {
         global $wpdb;
-        $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->options WHERE option_value = %s;", zyget_key('beaver-builder') ));
+        $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->options WHERE option_value = %s;", zyget_key('beaver-builder')));
     } elseif ($service == 'AKISMET') {
         # Akismet API Key
-$akismet = <<<EOC
+        $akismet = <<<EOC
 # Zysys Hosting AKISMET API key removed.  Enable the plugin to have it activated.
 EOC;
-    wpconfig_adder($cron, "## BEGIN ZYSYSHOSTING_AKISMET_API", "## END ZYSYSHOSTING_AKISMET_API");
+        wpconfig_adder($cron, "## BEGIN ZYSYSHOSTING_AKISMET_API", "## END ZYSYSHOSTING_AKISMET_API");
     } elseif ($service == 'AUDIOTHEME_GOOGLE_MAPS') {
         if (get_option('audiotheme_google_maps_api_key') == zyget_key('audiotheme_google_maps_api_key'))
             delete_option('audiotheme_google_maps_api_key');
