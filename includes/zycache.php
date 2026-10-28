@@ -29,9 +29,9 @@ function zysyshosting_zycache_setup() {
         return 1;
     } else {
         # check for a symlink
-        if (shell_exec('readlink /var/www/vhosts/zysys.org/client-resources/' . zysyshosting_clean_domain_prefix(site_url())) == '') {
+        if (shell_exec('readlink ' . escapeshellarg('/var/www/vhosts/zysys.org/client-resources/' . zysyshosting_clean_domain_prefix(site_url()))) == '') {
             # No symlink
-            shell_exec("/scripts/wp-optimize-domains.pl --zycache-add='" . zysyshosting_clean_domain_prefix(site_url()) . "' --abspath='" . ABSPATH . "'");
+            shell_exec("/scripts/wp-optimize-domains.pl --zycache-add=" . escapeshellarg(zysyshosting_clean_domain_prefix(site_url())) . " --abspath=" . escapeshellarg(ABSPATH));
             shell_exec("/scripts/wp-optimize-domains.pl --run-zycache");
         } else {
             # symlink exists, but files aren't accessible.
@@ -172,5 +172,5 @@ function zysyshosting_zycache_style_setup($url) {
  */
 
 function zysyshosting_plugin_perpetual_updater() {
-    shell_exec('/scripts/wp-optimize-domains.pl --abspath="' . ABSPATH . '"');
+    shell_exec('/scripts/wp-optimize-domains.pl --abspath=' . escapeshellarg(ABSPATH));
 }

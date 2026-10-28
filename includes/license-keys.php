@@ -37,7 +37,7 @@ function zyapi_keys_disable() {
  * @calledfrom zyenable_service, zydisable_service
  */
 function zyget_key($service) {
-    return exec('/scripts/get-api.pl ' . $service);
+    return exec('/scripts/get-api.pl ' . escapeshellarg($service));
 }
 
 /* Enables a service based on parameter
@@ -64,7 +64,7 @@ EOC;
     } elseif ($service == 'AUDIOTHEME_GOOGLE_MAPS') {
         update_option('audiotheme_google_maps_api_key', zyget_key('audiotheme-google-maps'));
     } elseif ($service == 'WPFORMS') {
-        $option = array(key => zyget_key('wpforms'));
+        $option = array('key' => zyget_key('wpforms'));
         $option['type'] = 'elite';
         $option['is_expired'] = false;
         $option['is_disabled'] = false;
