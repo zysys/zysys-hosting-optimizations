@@ -26,25 +26,40 @@ function zysyshosting_remove_installation_files() {
 }
 
 /* Runs, through find and shell_exec, chmodding of 644 on files and 755 on directories.  Runs on the default files from the original wp installation and then recurses in WP_CONTENT, WP_INCLUDES, and WP_ADMIN
+ * wp-config.php is never loosened: it is enforced to 0600 in PHP (PHP runs as the file owner), in ABSPATH or, when WordPress keeps it one level up, in the parent directory.
  * @since 0.5.5
  * @param NONE
  * @return NONE
  */
 function zysyshosting_wp_permissions() {
-    shell_exec('find ' . ABSPATH . ' -maxdepth 1 -type f -name "index.php" -o -name "license.txt" -o -name "readme.html" -o -name "wp-activate.php" -o -name "wp-blog-header.php" -o -name "wp-comments-post.php" -o -name "wp-config-sample.php" -o -name "wp-cron.php" -o -name "wp-links-opml.php" -o -name "wp-load.php" -o -name "wp-login.php" -o -name "wp-mail.php" -o -name "wp-settings.php" -o -name "wp-signup.php" -o -name "wp-trackback.php" -o -name "xmlrpc.php" -o -name "wp-config.php" -exec chmod 644 {} \; &');
-    shell_exec("chmod 755 " . escapeshellcmd(WP_CONTENT_DIR) . " &");
-    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " &");
-    shell_exec("chmod 755 " . escapeshellcmd(ABSPATH . '/wp-admin/') . " &");
+    $abspath = escapeshellarg(ABSPATH);
+    $content = escapeshellarg(WP_CONTENT_DIR);
+    $includes = escapeshellarg(ABSPATH . '/' . WPINC . '/');
+    $admin = escapeshellarg(ABSPATH . '/wp-admin/');
+
+    # \( ... \) groups the -name alternatives so -exec applies to all of them, not just the last
+    shell_exec('find ' . $abspath . ' -maxdepth 1 -type f \( -name "index.php" -o -name "license.txt" -o -name "readme.html" -o -name "wp-activate.php" -o -name "wp-blog-header.php" -o -name "wp-comments-post.php" -o -name "wp-config-sample.php" -o -name "wp-cron.php" -o -name "wp-links-opml.php" -o -name "wp-load.php" -o -name "wp-login.php" -o -name "wp-mail.php" -o -name "wp-settings.php" -o -name "wp-signup.php" -o -name "wp-trackback.php" -o -name "xmlrpc.php" \) -exec chmod 644 {} \; &');
+
+    foreach (array(ABSPATH . 'wp-config.php', dirname(ABSPATH) . '/wp-config.php') as $config) {
+        if (is_file($config)) {
+            @chmod($config, 0600);
+            break;
+        }
+    }
+
+    shell_exec('chmod 755 ' . $content . ' &');
+    shell_exec('chmod 755 ' . $includes . ' &');
+    shell_exec('chmod 755 ' . $admin . ' &');
 
     # WP_CONTENT, ABSPATH . WPINC, ABSPATH . '/wp-admin/'
-    shell_exec("find " . escapeshellcmd(WP_CONTENT_DIR) . " ! -perm 644 -type f -exec chmod 644 {} \; &");
-    shell_exec("find " . escapeshellcmd(WP_CONTENT_DIR) . " ! -perm 755 -type d -exec chmod 755 {} \; &");
+    shell_exec('find ' . $content . ' ! -perm 644 -type f -exec chmod 644 {} \; &');
+    shell_exec('find ' . $content . ' ! -perm 755 -type d -exec chmod 755 {} \; &');
 
-    shell_exec("find " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
-    shell_exec("find " . escapeshellcmd(ABSPATH . '/' . WPINC . '/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
+    shell_exec('find ' . $includes . ' ! -perm 644 -type f -exec chmod 644 {} \; &');
+    shell_exec('find ' . $includes . ' ! -perm 755 -type d -exec chmod 755 {} \; &');
 
-    shell_exec("find " . escapeshellcmd(ABSPATH . '/wp-admin/') . " ! -perm 644 -type f -exec chmod 644 {} \; &");
-    shell_exec("find " . escapeshellcmd(ABSPATH . '/wp-admin/') . " ! -perm 755 -type d -exec chmod 755 {} \; &");
+    shell_exec('find ' . $admin . ' ! -perm 644 -type f -exec chmod 644 {} \; &');
+    shell_exec('find ' . $admin . ' ! -perm 755 -type d -exec chmod 755 {} \; &');
 }
 
 /* Checks if the default WordPress rules are present.  Otherwise it uses wp-cli to flush them to .htaccess
