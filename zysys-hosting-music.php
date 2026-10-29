@@ -1,9 +1,9 @@
 <?php
 /*
- * Plugin Name: Zysys Hosting Optimizations
- * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingOptimizations
- * Description: This plugin allows for all the default Zysys Hosting Optimizations to be installed at once and continually configured
- * Version: 0.6.3
+ * Plugin Name: Zysys Hosting Music Site Recommendations
+ * Plugin URI: https://codex.zysys.org/bin/view.cgi/Main/WordpressPlugin:ZysysHostingMusicSiteRecommendations
+ * Description: This plugin sets up recommendations and checklists for musicians who have a website
+ * Version: 0.0.1
  * Author: Z. Bornheimer (Zysys)
  * Author URI: http://zysys.org
  * License: GPLv3
@@ -16,23 +16,31 @@
 
 
 /* TODO:
- * ADD ADMIN PANEL
- *  - WITH OPTIONS FOR EACH ZYCACHE SETTING,
- *  - MEMCACHED,
- *  - DOCUMENTATION
- *  ...review register_settings()
- * SUGGEST SETTINGS FOR WP-SUPERCACHE & W3 TOTAL CACHE
  *
  */
 
 #####################################################################
 # Tools:
-# Zycache Setup, zysys.cachefly.net for https.  https (js goes on js - leave relative alone, css goes on cdn2 - leave relative alone, all others zycache)
-# Memcached Setup
-# WP_Cron Setup
-# wp-config.php securing
-# file & dir chmodding
-# set file permissions according to the Hardening Wordpress guide
+# Mark certain pages and create master pages (ABOUT/BIO):
+#   - Bio (full)
+#   - Bio (500 words, 200 words, 100 words) - define as many as you want
+#   - Press Page w/ Photos & Audio
+#   - Contact Page
+# Focus Tools:
+#   - Enter your specific website goals:
+#       ie:
+#           - Be a hub for bookings,
+#           - Get booked as a copyist by showing skills with Finale, attention to detail, etc
+#           - Create a progress meter for my playing
+#           - Sell my recording
+#           - Sell sheet music
+# Recommended Plugins:
+#   BWP Sitemap
+#   ZysysHosting Optimizations
+#   WooCommerce (if applicable)
+#   Jetpack
+#   The SEO Framework
+#   Page Builder
 #####################################################################
 
 /**
@@ -48,7 +56,7 @@ function zysyshosting_updater_init() {
     $config = array(
         'base'         => plugin_basename( __FILE__ ), //required
         'repo_uri'     => 'https://zysys.org/',
-        'repo_slug'    => 'zysys-hosting-optimizations',
+        'repo_slug'    => 'zysys-hosting-music',
     );
 
     /* Load Updater Class */
