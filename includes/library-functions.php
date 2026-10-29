@@ -17,7 +17,7 @@ function zyerror($code, $extra = null) {
     else
         $fullcode = $code;
     $line = sprintf("%s - %s() %s %s\n", date("M d, Y H:i:s"), $caller, $fullcode, __FILE__);
-    file_put_contents(ZYLOG, $line, FILE_APPEND | LOCK_EX);
+    #file_put_contents(ZYLOG, $line, FILE_APPEND | LOCK_EX);
 }
 
 /* Converts multiple lines to one line for the purpose of file comparisions
